@@ -1,4 +1,5 @@
 import configparser
+import urllib
 import csv
 
 Config = configparser.ConfigParser()
@@ -19,3 +20,4 @@ def ConfigSectionMap(section):
 
 url = ConfigSectionMap("ConfigRoutes")['url']
 print(url)
+
