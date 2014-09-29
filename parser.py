@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import configparser
 import urllib.request
 import time
@@ -8,6 +10,139 @@ import sys
 ## config file init
 Config = configparser.ConfigParser()
 Config.read("config.ini")
+
+class AdwordsContainer:
+    row = OrderedDict()
+    def __init__(self, opt):
+        if not opt:
+            self.row = OrderedDict([
+                (u'Campaign',u'Search - Top termékek'),
+                (u'Campaign daily budget', u'10000'),
+                (u'Networks',u'Google Search; Search Partners'),
+                (u'Languages' , u'hu'), 
+                (u'ID' , u''), 
+                (u'Location' , u''), 
+                (u'Ad Group' , u''), 
+                (u'Max CPC' , u''), 
+                (u'Display Network Max CPC' , u''),
+                (u'Max CPM' , u''), 
+                (u'CPA Bid' , u''), 
+                (u'Display Network' , u''), 
+                (u'Custom Bid Type' , u''),
+                (u'Ad Group Type' , u''),
+                (u'Flexible Reach' , u''),
+                (u'Keyword' , u''),
+                (u'Criterion Type' , u''),
+                (u'First Page CPC1' , u''),
+                (u'Top Of Page CPC' , u''),
+                (u'Quality Score' , u''),
+                (u'Bid Strategy Type' , u'Manual CPC'),
+                (u'Bid Strategy Name' , u''),
+                (u'Enhanced CPC' , u'Disabled'),
+                (u'Viewable CPM' , u'Disabled'),
+                (u'Bid Adjustment' , u''),
+                (u'Headline' , u''),
+                (u'Description Line 1' , u''),
+                (u'Description Line 2' , u''),
+                (u'Display URL' , u''),	
+                (u'Destination URL' , ''),
+                (u'Device Preference' , u''),
+                (u'Start Date' , u''),
+                (u'End Date' , ''),
+                (u'Ad Schedule' , u'(Monday@100%[00:00-24:00]);(Tuesday@100%[00:00-24:00]);(Wednesday@100%[00:00-24:00]);(Thursday@100%[00:00-24:00]);(Friday@100%[00:00-24:00]);(Saturday@100%[00:00-24:00]);(Sunday@100%[00:00-24:00])'),
+                (u'Campaign Status' , u'Active'),
+                (u'AdGroup Status' , u''),
+                (u'Status' , u''),
+                (u'Approval Status' , u''),
+                (u'Suggested Changes' , u''),
+                (u'Comment' , u'')])
+        else:
+            self.row = OrderedDict([
+                (u'Campaign',u'Search - Top termékek'),
+                (u'Campaign daily budget', u''),
+                (u'Networks',u'Google Search; Search Partners'),
+                (u'Languages' , u''), 
+                (u'ID' , u''), 
+                (u'Location' , u''), 
+                (u'Ad Group' , u''), 
+                (u'Max CPC' , u''), 
+                (u'Display Network Max CPC' , u''),
+                (u'Max CPM' , u''), 
+                (u'CPA Bid' , u''), 
+                (u'Display Network' , u''), 
+                (u'Custom Bid Type' , u''),
+                (u'Ad Group Type' , u''),
+                (u'Flexible Reach' , u''),
+                (u'Keyword' , u''),
+                (u'Criterion Type' , u''),
+                (u'First Page CPC1' , u''),
+                (u'Top Of Page CPC' , u''),
+                (u'Quality Score' , u''),
+                (u'Bid Strategy Type' , u''),
+                (u'Bid Strategy Name' , u''),
+                (u'Enhanced CPC' , u''),
+                (u'Viewable CPM' , u''),
+                (u'Bid Adjustment' , u''),
+                (u'Headline' , u''),
+                (u'Description Line 1' , u''),
+                (u'Description Line 2' , u''),
+                (u'Display URL' , u''),	
+                (u'Destination URL' , ''),
+                (u'Device Preference' , u''),
+                (u'Start Date' , u''),
+                (u'End Date' , ''),
+                (u'Ad Schedule' , u''),
+                (u'Campaign Status' , u'Active'),
+                (u'AdGroup Status' , u''),
+                (u'Status' , u''),
+                (u'Approval Status' , u''),
+                (u'Suggested Changes' , u''),
+                (u'Comment' , u'')])
+
+    def __getitem__(self, key):
+        return self.row[key]
+    
+    def __setitem__(self, key, value):
+        self.row[key] = value
+
+    def keys(self):
+        return self.row.keys()
+
+    def values(self):
+        return self.row.values()
+
+    def items(self):
+        return self.row.items()
+
+
+# initializing the csv stuff
+filename = "test" + ending + ".csv"
+with open(filename, 'wb') as csvf:
+    googlewriter = UnicodeWriter(csvf)
+
+    # first row of header
+    header = AdwordsContainer(0)
+
+    # second row of header 
+    ## diffs
+    header2 = AdwordsContainer(1)
+
+# the product data in the adwords csv consist of
+# three rows for whatever reason. this is the first row.
+    product1 = AdwordsContainer(1)
+# second product row    
+    product2 = AdwordsContainer(1)
+# third product row - the last one
+# when writing in the rows, one needs to change
+# the respective attributes
+    product3 = AdwordsContainer(1)
+
+# Init csv headersj
+    print (header.items())
+    googlewriter.writerow(header.keys())
+    googlewriter.writerow(header.values())
+    googlewriter.writerow(header2.values())
+
 
 ## reading and handling config file data
 def ConfigSectionMap(section):
@@ -39,7 +174,7 @@ def reporthook(count, block_size, total_size):
 
 ## calculate last time downloaded
 timelastdownloaded = datetime.datetime.strptime(ConfigSectionMap("ConfigRoutes")['lastparsed'], '%Y.%m.%d').date()
-
+filename = ConfigSectionMap("ConfigRoutes")['filename']
 url = ConfigSectionMap("ConfigRoutes")['url']
 print("we need the file from: "+url)
 print("date of last update: "+timelastdownloaded.__str__())
@@ -57,3 +192,16 @@ if (timelastdownloaded < datetime.date.today()):
 else:
     print("File's okay we can use the current one")
     
+with open(filename, newline='', encoding='utf-8') as csvfile:
+    spamreader = csv.reader(csvfile, delimiter='|', quotechar='"')
+    try:
+        for row in spamreader:
+            productid = row[0]
+            name = row[1]
+            price = row[3]
+            imagelink = row[4]
+            url = row[5]
+            print(name.encode('utf-8'))
+
+    except csv.Error as e:
+        sys.exit('file {}, line {}: {}'.format(filename, reader.line_num, e))
