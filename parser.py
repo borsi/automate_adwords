@@ -201,6 +201,33 @@ else:
     
 ## Let's open the dowloaded csv file - right now we don't store historic data
 #
+#print(name.encode('utf-8'))
+# initializing the csv stuff
+output = "test.csv"
+csvf = open(output, 'wb')
+googlewriter = UnicodeWriter(csvf)
+# first row of header
+header = AdwordsContainer(0)
+# second row of header 
+## diffs
+header2 = AdwordsContainer(1)
+# the product data in the adwords csv consist of
+# three rows for whatever reason. this is the first row.
+product1 = AdwordsContainer(1)
+# second product row    
+product2 = AdwordsContainer(1)
+# third product row - the last one
+# when writing in the rows, one needs to change
+# the respective attributes
+product3 = AdwordsContainer(1)
+# Init csv headersj
+print (header.items())
+googlewriter.writerow(header.keys())
+googlewriter.writerow(header.values())
+googlewriter.writerow(header2.values())
+
+count = 0
+
 with open(filename, newline='', encoding='utf-8') as csvfile:
     spamreader = csv.reader(csvfile, delimiter='|', quotechar='"')
     try:
@@ -210,59 +237,33 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
             price = row[3]
             imagelink = row[4]
             url = row[5]
-            print(name.encode('utf-8'))
             
-            # initializing the csv stuff
-            output = "test.csv"
-            with open(output, 'wb') as csvf:
-                googlewriter = UnicodeWriter(csvf)
+            product1["Ad Group"] = name
+            product1["Max CPC"] = u'25'
+            product2["Ad Group"] = name
+            product2["Headline"] = name
+            product2["Description Line 1"] = u'Kedvezmények és Ingyenes Szállítás.'
+            product2["Description Line 2"] = u'Vásároljon jó áron a ClickShopban!'
+            product3["Ad Group"] = name
+            product3["Criterion Type"] = u'Phrase'
+            # after this we need to do some magic. the second rows' 
+            # "Display URL" attribute should have a format that looks 
+            # something like this: ClickShop.hu/Product-clickshop-name-with-dashes
+            dashed_name = name.replace(" ", "-")
+            product2["Display URL"] = "ClickShop.hu/" + dashed_name
+            product2["Destination URL"] = url
 
-                # first row of header
-                header = AdwordsContainer(0)
+            googlewriter.writerow(product1.values())
+            googlewriter.writerow(product2.values())
+            googlewriter.writerow(product3.values())
+            count += 1
 
-                # second row of header 
-                ## diffs
-                header2 = AdwordsContainer(1)
-
-# the product data in the adwords csv consist of
-# three rows for whatever reason. this is the first row.
-                product1 = AdwordsContainer(1)
-# second product row    
-                product2 = AdwordsContainer(1)
-# third product row - the last one
-# when writing in the rows, one needs to change
-# the respective attributes
-                product3 = AdwordsContainer(1)
-
-# Init csv headersj
-                print (header.items())
-                googlewriter.writerow(header.keys())
-                googlewriter.writerow(header.values())
-                googlewriter.writerow(header2.values())
-                
-                product1["Ad Group"] = name
-                product1["Max CPC"] = u'25'
-                product2["Ad Group"] = name.string
-                product2["Headline"] = name.string
-                product2["Description Line 1"] = u'Kedvezmények és Ingyenes Szállítás.'
-                product2["Description Line 2"] = u'Vásároljon jó áron a ClickShopban!'
-                product3["Ad Group"] = name.string
-                product3["Criterion Type"] = u'Phrase'
-                # after this we need to do some magic. the second rows' 
-                # "Display URL" attribute should have a format that looks 
-                # something like this: ClickShop.hu/Product-clickshop-name-with-dashes
-                dashed_name = name.string.replace(" ", "-")
-                product2["Display URL"] = "ClickShop.hu/" + dashed_name
-                product2["Destination URL"] = url
-
-                googlewriter.writerow(product1.values())
-                googlewriter.writerow(product2.values())
-                googlewriter.writerow(product3.values())
-                
- 
+            print(count) 
 
     except csv.Error as e:
         sys.exit('file {}, line {}: {}'.format(filename, reader.line_num, e))
 
+
+csvf.close()
 
 
