@@ -239,7 +239,27 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
                 googlewriter.writerow(header.keys())
                 googlewriter.writerow(header.values())
                 googlewriter.writerow(header2.values())
+                
+                product1["Ad Group"] = name
+                product1["Max CPC"] = u'25'
+                product2["Ad Group"] = name.string
+                product2["Headline"] = name.string
+                product2["Description Line 1"] = u'Kedvezmények és Ingyenes Szállítás.'
+                product2["Description Line 2"] = u'Vásároljon jó áron a ClickShopban!'
+                product3["Ad Group"] = name.string
+                product3["Criterion Type"] = u'Phrase'
+                # after this we need to do some magic. the second rows' 
+                # "Display URL" attribute should have a format that looks 
+                # something like this: ClickShop.hu/Product-clickshop-name-with-dashes
+                dashed_name = name.string.replace(" ", "-")
+                product2["Display URL"] = "ClickShop.hu/" + dashed_name
+                product2["Destination URL"] = url
 
+                googlewriter.writerow(product1.values())
+                googlewriter.writerow(product2.values())
+                googlewriter.writerow(product3.values())
+                
+ 
 
     except csv.Error as e:
         sys.exit('file {}, line {}: {}'.format(filename, reader.line_num, e))
