@@ -5,12 +5,46 @@ import urllib.request
 import time
 import datetime
 import csv
-import sys
+import sys, io, codecs
+
+# for the adwords custom class
+from collections import OrderedDict
 
 ## config file init
 Config = configparser.ConfigParser()
 Config.read("config.ini")
 
+# dictwriter for utf8 output
+class UnicodeWriter:
+    """
+    A CSV writer which will write rows to CSV file "f",
+    which is encoded in the given encoding.
+    """
+
+    def __init__(self, f, dialect=csv.excel_tab, encoding="utf-8", **kwds):
+        # Redirect output to a queue
+        self.queue = io.StringIO()
+        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
+        self.stream = f
+        self.encoder = codecs.getincrementalencoder(encoding)()
+
+    def writerow(self, row):
+        self.writer.writerow([s.encode("utf-8") for s in row])
+        # Fetch UTF-8 output from the queue ...
+        data = self.queue.getvalue()
+        #data = data.decode("utf-8")
+        # ... and reencode it into the target encoding
+        data = self.encoder.encode(data)
+        # write to the target stream
+        self.stream.write(data)
+        # empty queue
+        self.queue.truncate(0)
+
+    def writerows(self, rows):
+        for row in rows:
+            self.writerow(row)
+
+## class for adwords type output
 class AdwordsContainer:
     row = OrderedDict()
     def __init__(self, opt):
@@ -115,33 +149,6 @@ class AdwordsContainer:
         return self.row.items()
 
 
-# initializing the csv stuff
-filename = "test" + ending + ".csv"
-with open(filename, 'wb') as csvf:
-    googlewriter = UnicodeWriter(csvf)
-
-    # first row of header
-    header = AdwordsContainer(0)
-
-    # second row of header 
-    ## diffs
-    header2 = AdwordsContainer(1)
-
-# the product data in the adwords csv consist of
-# three rows for whatever reason. this is the first row.
-    product1 = AdwordsContainer(1)
-# second product row    
-    product2 = AdwordsContainer(1)
-# third product row - the last one
-# when writing in the rows, one needs to change
-# the respective attributes
-    product3 = AdwordsContainer(1)
-
-# Init csv headersj
-    print (header.items())
-    googlewriter.writerow(header.keys())
-    googlewriter.writerow(header.values())
-    googlewriter.writerow(header2.values())
 
 
 ## reading and handling config file data
@@ -192,6 +199,8 @@ if (timelastdownloaded < datetime.date.today()):
 else:
     print("File's okay we can use the current one")
     
+## Let's open the dowloaded csv file - right now we don't store historic data
+#
 with open(filename, newline='', encoding='utf-8') as csvfile:
     spamreader = csv.reader(csvfile, delimiter='|', quotechar='"')
     try:
@@ -202,6 +211,38 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
             imagelink = row[4]
             url = row[5]
             print(name.encode('utf-8'))
+            
+            # initializing the csv stuff
+            output = "test.csv"
+            with open(output, 'wb') as csvf:
+                googlewriter = UnicodeWriter(csvf)
+
+                # first row of header
+                header = AdwordsContainer(0)
+
+                # second row of header 
+                ## diffs
+                header2 = AdwordsContainer(1)
+
+# the product data in the adwords csv consist of
+# three rows for whatever reason. this is the first row.
+                product1 = AdwordsContainer(1)
+# second product row    
+                product2 = AdwordsContainer(1)
+# third product row - the last one
+# when writing in the rows, one needs to change
+# the respective attributes
+                product3 = AdwordsContainer(1)
+
+# Init csv headersj
+                print (header.items())
+                googlewriter.writerow(header.keys())
+                googlewriter.writerow(header.values())
+                googlewriter.writerow(header2.values())
+
 
     except csv.Error as e:
         sys.exit('file {}, line {}: {}'.format(filename, reader.line_num, e))
+
+
+
