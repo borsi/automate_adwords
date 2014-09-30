@@ -237,36 +237,69 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
     spamreader = csv.reader(csvfile, delimiter='|', quotechar='"')
     try:
         for row in spamreader:
-            productid = row[0]
-            name = row[1]
-            price = row[3]
-            imagelink = row[4]
-            url = row[5]
-            
-            product1["Ad Group"] = name
-            product1["Max CPC"] = u'25'
-            product2["Ad Group"] = name
-            product2["Headline"] = name
-            product2["Description Line 1"] = u'Kedvezmények és Ingyenes Szállítás.'
-            product2["Description Line 2"] = u'Vásároljon jó áron a ClickShopban!'
-            product3["Ad Group"] = name
-            product3["Criterion Type"] = u'Phrase'
-            # after this we need to do some magic. the second rows' 
-            # "Display URL" attribute should have a format that looks 
-            # something like this: ClickShop.hu/Product-clickshop-name-with-dashes
-            dashed_name = name.replace(" ", "-")
-            product2["Display URL"] = "ClickShop.hu/" + dashed_name
-            product2["Destination URL"] = url
+            dashed_name = ''
+            if row[1] != "Termeknev":
+                print(row[1])
+                productid = row[0]
+                name = row[1]
+                price = row[3]
+                imagelink = row[4]
+                url = row[5]
+                url = url.replace("?ref=argep", '') 
+                descline1 = name
 
-            googlewriter.writerow(product1)
-            googlewriter.writerow(product2)
-            googlewriter.writerow(product3)
-            count += 1
-            if count > 5000:
-                print(count.__str__() + " " + name + " " + productid + " " + price + " " + imagelink) 
-                break
+                product1["Ad Group"] = name
+                product2["Ad Group"] = name
+                product3["Ad Group"] = name
 
-            print(count.__str__())# + " " + name + " " + productid + " " + price + " " + imagelink) 
+                # we reduce the size of the full name so that it fits within adwords criteria
+                ## adgroup can be as long as we need it
+                # if the length of the name is more than 25 characters, we split it
+                # and use the second, first, third and last word of the original name
+                if len(name) > 25:
+                    w = name.split()
+                    name = w[0] + " " + w[1] + " " + w[2] + " " + w[len(w)-1]
+                    descline1 = ""
+                    for word in range(3, len(w)-2):
+                        descline1 += w[word] + " "
+                    if len(name) > 25:
+                        descline1 += w[len(w)-1]
+                        name = w[0] + " " + w[1] + " " + w[2]  
+                        if len(name) > 25:
+                            name = w[0] + " " + w[2]  
+
+
+                product1["Max CPC"] = u'25'
+                product2["Headline"] = name
+                product2["Description Line 1"] = descline1
+                product2["Description Line 2"] = u'Vásároljon jó áron a ClickShopban!'
+                product3["Criterion Type"] = u'Phrase'
+                # after this we need to do some magic. the second rows' 
+                # "Display URL" attribute should have a format that looks 
+                # something like this: ClickShop.hu/Product-clickshop-name-with-dashes
+                if len(name) > 22:
+                    w = name.split()
+                    for n in range(0, len(w)-2):
+                        dashed_name += w[n] + " "
+                    dashed_name = dashed_name.replace(" ", "-")
+                    dashed_name = dashed_name[:-1]
+                elif len(name) <= 22:
+                    dashed_name = name.replace(" ", "-")
+                else:
+                    dashed_name = name.replace(" ", "-")
+
+                product2["Display URL"] = "ClickShop.hu/" + dashed_name
+                product2["Destination URL"] = url
+
+                googlewriter.writerow(product1)
+                googlewriter.writerow(product2)
+                googlewriter.writerow(product3)
+                count += 1
+                if count > 20:
+                    print(count.__str__() + " " + name + " " + productid + " " + price + " " + imagelink) 
+                    break
+
+                print(count.__str__())# + " " + name + " " + productid + " " + price + " " + imagelink) 
 
     except csv.Error as e:
         sys.exit('file {}, line {}: {}'.format(filename, reader.line_num, e))
