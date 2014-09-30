@@ -135,6 +135,9 @@ class AdwordsContainer:
 
     def __getitem__(self, key):
         return self.row[key]
+
+    def get(self, key, restval):
+        return self.row[key]
     
     def __setitem__(self, key, value):
         self.row[key] = value
@@ -204,8 +207,8 @@ else:
 #print(name.encode('utf-8'))
 # initializing the csv stuff
 output = "test.csv"
-csvf = open(output, 'wb')
-googlewriter = UnicodeWriter(csvf)
+csvf = open(output, 'w')
+#googlewriter = UnicodeWriter(csvf)
 # first row of header
 header = AdwordsContainer(0)
 # second row of header 
@@ -221,10 +224,12 @@ product2 = AdwordsContainer(1)
 # the respective attributes
 product3 = AdwordsContainer(1)
 # Init csv headersj
+
+googlewriter = csv.DictWriter(csvf, header.keys(), extrasaction='ignore', delimiter="\t")
 print (header.items())
-googlewriter.writerow(header.keys())
-googlewriter.writerow(header.values())
-googlewriter.writerow(header2.values())
+googlewriter.writeheader()
+googlewriter.writerow(header)
+googlewriter.writerow(header2)
 
 count = 0
 
@@ -253,12 +258,15 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
             product2["Display URL"] = "ClickShop.hu/" + dashed_name
             product2["Destination URL"] = url
 
-            googlewriter.writerow(product1.values())
-            googlewriter.writerow(product2.values())
-            googlewriter.writerow(product3.values())
+            googlewriter.writerow(product1)
+            googlewriter.writerow(product2)
+            googlewriter.writerow(product3)
             count += 1
+            if count > 5000:
+                print(count.__str__() + " " + name + " " + productid + " " + price + " " + imagelink) 
+                break
 
-            print(count) 
+            print(count.__str__())# + " " + name + " " + productid + " " + price + " " + imagelink) 
 
     except csv.Error as e:
         sys.exit('file {}, line {}: {}'.format(filename, reader.line_num, e))
