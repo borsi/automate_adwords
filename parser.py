@@ -239,7 +239,6 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
         for row in spamreader:
             dashed_name = ''
             if row[1] != "Termeknev":
-                print(row[1])
                 productid = row[0]
                 name = row[1]
                 price = row[3]
@@ -256,8 +255,8 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
                 ## adgroup can be as long as we need it
                 # if the length of the name is more than 25 characters, we split it
                 # and use the second, first, third and last word of the original name
+                w = name.split()
                 if len(name) > 25:
-                    w = name.split()
                     name = w[0] + " " + w[1] + " " + w[2] + " " + w[len(w)-1]
                     descline1 = ""
                     for word in range(3, len(w)-2):
@@ -269,16 +268,16 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
                             name = w[0] + " " + w[2]  
 
 
-                product1["Max CPC"] = u'25'
                 product2["Headline"] = name
                 product2["Description Line 1"] = descline1
                 product2["Description Line 2"] = u'Vásároljon jó áron a ClickShopban!'
-                product3["Criterion Type"] = u'Phrase'
+                product3["Criterion Type"] = u'Exact'
+                product3["Max CPC"] = u'25'
+                product3["Keyword"] = w[0] + " " + w[1] + " " + w[2]
                 # after this we need to do some magic. the second rows' 
                 # "Display URL" attribute should have a format that looks 
                 # something like this: ClickShop.hu/Product-clickshop-name-with-dashes
                 if len(name) > 22:
-                    w = name.split()
                     for n in range(0, len(w)-2):
                         dashed_name += w[n] + " "
                     dashed_name = dashed_name.replace(" ", "-")
@@ -291,11 +290,11 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
                 product2["Display URL"] = "ClickShop.hu/" + dashed_name
                 product2["Destination URL"] = url
 
-                googlewriter.writerow(product1)
+                #googlewriter.writerow(product1)
                 googlewriter.writerow(product2)
                 googlewriter.writerow(product3)
                 count += 1
-                if count > 20:
+                if count > 10:
                     print(count.__str__() + " " + name + " " + productid + " " + price + " " + imagelink) 
                     break
 
