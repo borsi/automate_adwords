@@ -247,6 +247,10 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
                 url = url.replace("?ref=argep", '') 
                 descline1 = name
 
+
+                price = int(price)
+                formattedprice = format(price, ',d').replace(',','.') + " Ft."
+
                 product1["Ad Group"] = name
                 product2["Ad Group"] = name
                 product3["Ad Group"] = name
@@ -267,13 +271,19 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
                         if len(name) > 25:
                             name = w[0] + " " + w[2]  
 
-
+                
                 product2["Headline"] = name
-                product2["Description Line 1"] = descline1
-                product2["Description Line 2"] = u'Vásároljon jó áron a ClickShopban!'
+                product2["Description Line 1"] = descline1 + " " + formattedprice
+                if(price) > 15000:
+                    product2["Description Line 2"] = u'Minőségi új termék,Ingyen szállítás'
+                else:
+                    product2["Description Line 2"] = u'Minőségi új termék, kedvező áron'
                 product3["Criterion Type"] = u'Exact'
                 product3["Max CPC"] = u'25'
-                product3["Keyword"] = w[0] + " " + w[1] + " " + w[2]
+                if len(w) > 2:
+                    product3["Keyword"] = w[0] + " " + w[1] + " " + w[2]
+                else:
+                    product3["Keyword"] = w[0] + " " + w[1]
                 # after this we need to do some magic. the second rows' 
                 # "Display URL" attribute should have a format that looks 
                 # something like this: ClickShop.hu/Product-clickshop-name-with-dashes
@@ -294,8 +304,8 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
                 googlewriter.writerow(product2)
                 googlewriter.writerow(product3)
                 count += 1
-                if count > 10:
-                    print(count.__str__() + " " + name + " " + productid + " " + price + " " + imagelink) 
+                if count > 10000:
+                    print(count.__str__() + " " + name + " " + productid + " " + price.__str__() + " " + imagelink) 
                     break
 
                 print(count.__str__())# + " " + name + " " + productid + " " + price + " " + imagelink) 
