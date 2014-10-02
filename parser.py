@@ -259,43 +259,105 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
                 ## adgroup can be as long as we need it
                 # if the length of the name is more than 25 characters, we split it
                 # and use the second, first, third and last word of the original name
+
+
+
+# todo: descline1 túl hosszú bizonyos esetekben [x]
+# csökkenteni mindig az utolsó előtti szavakkal [x]
+# valamint max cpc másik sorba is kell (mindbe) [x]
+# csekkolni, hogy mindenhol jól építjük-e fel a nevet meg a descline1-et
+
                 w = name.split()
-                if len(name) > 25:
-                    name = w[0] + " " + w[1] + " " + w[2] + " " + w[len(w)-1]
-                    descline1 = ""
-                    for word in range(3, len(w)-2):
-                        descline1 += w[word] + " "
-                    if len(name) > 25:
-                        descline1 += w[len(w)-1]
-                        name = w[0] + " " + w[1] + " " + w[2]  
-                        if len(name) > 25:
-                            name = w[0] + " " + w[2]  
+                w2 = w
+                desclinelist = []
+                counter = 1
+                while len(name) >= 25:
+                    desclinelist.insert(0,w2[-1])
+                    del w2[-1]
+                    name = " ".join(w2)
+                    counter = counter + 1
+                descline1 = " ".join(desclinelist)
+#                if len(name) > 25:
+#                    if len(w) > 3:
+#                        name = w[0] + " " + w[1] + " " + w[2] + " " + w[len(w)-1]
+#                        descline1 = ""
+#                        for word in range(3, len(w)-2):
+#                            descline1 += w[word] + " "
+#                    elif len(w) == 3:
+#                        name = w[0] + " " + w[1]
+#                        descline1 = w[2]
+#                    elif len(w) == 2:
+#                        name = w[0] 
+#                        descline1 = w[1]
+##                    else:
+##                        name = w[0] + " " + w[1]
+#                    if len(name) > 25:
+#                        descline1 += w[len(w)-1]
+#                        if len(w) == 3:
+#                            name = w[0] + " " + w[1] + " " + w[2]
+#                        elif len(w) == 2:
+#                            name = w[0] + " " + w[1]
+#                        else:
+#                            name = w[0]
+#                        if len(name) > 25:
+#                            if len(w) == 2:
+#                                name = w[0] + " " + w[1]
+#                            else:
+#                                name = w[0] + " " + w[2]  
 
                 
                 product2["Headline"] = name
+
+                splitteddesc = descline1.split()
+                # ha nem férünk bele a korlátba, kigórjuk az utolsó előtti szót.
+                if len(descline1) + len(formattedprice) > 34:
+                    descline1 = descline1.replace(splitteddesc[len(splitteddesc)-2], " ")
+                    # ha még mindig nem, akkor még egyet kiszedünk
+                    if len(descline1) + len(formattedprice) > 34:
+                        descline1 = descline1.replace(splitteddesc[len(splitteddesc)-3], "")
+                        # ha még mindig nem, akkor még egyet kiszedünk
+                        if len(descline1) + len(formattedprice) > 34:
+                            descline1 = descline1.replace(splitteddesc[len(splitteddesc)-4], "")
+                            # ha még mindig nem, akkor még egyet kiszedünk
+                            if len(descline1) + len(formattedprice) > 34:
+                                descline1 = descline1.replace(splitteddesc[len(splitteddesc)-1], "")
+                                # ha még mindig nem, akkor még egyet kiszedünk
+                                if len(descline1) + len(formattedprice) > 34:
+                                    descline1 = descline1.replace(splitteddesc[len(splitteddesc)-5], "")
+
                 product2["Description Line 1"] = descline1 + " " + formattedprice
+# más legyen a szöveg, ha ingyen szállítunk és ha nem
                 if(price) > 15000:
                     product2["Description Line 2"] = u'Minőségi új termék,Ingyen szállítás'
                 else:
                     product2["Description Line 2"] = u'Minőségi új termék, kedvező áron'
                 product3["Criterion Type"] = u'Exact'
                 product3["Max CPC"] = u'25'
-                if len(w) > 2:
-                    product3["Keyword"] = w[0] + " " + w[1] + " " + w[2]
-                else:
-                    product3["Keyword"] = w[0] + " " + w[1]
+                product2["Max CPC"] = u'25'
+                product3["Keyword"] = " ".join(w)
                 # after this we need to do some magic. the second rows' 
                 # "Display URL" attribute should have a format that looks 
                 # something like this: ClickShop.hu/Product-clickshop-name-with-dashes
                 if len(name) > 22:
-                    for n in range(0, len(w)-2):
-                        dashed_name += w[n] + " "
+                    name = name.replace(w[len(w)-2], "")
+                    if len(name) > 22:
+                        name = name.replace(w[len(w)-3], "")
+                        if len(name) > 22:
+                            name = name.replace(w[len(w)-4], "")
+                            if len(name) > 22:
+                                name = name.replace(w[len(w)-1], "")
+                    dashed_name = name
                     dashed_name = dashed_name.replace(" ", "-")
-                    dashed_name = dashed_name[:-1]
+                    if len(dashed_name) > 22:
+                        dashed_name[:-1]
                 elif len(name) <= 22:
                     dashed_name = name.replace(" ", "-")
+                    if len(dashed_name) > 22:
+                        dashed_name[:-1]
                 else:
                     dashed_name = name.replace(" ", "-")
+                    if len(dashed_name) > 22:
+                        dashed_name[:-1]
 
                 product2["Display URL"] = "ClickShop.hu/" + dashed_name
                 product2["Destination URL"] = url
