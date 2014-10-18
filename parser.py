@@ -6,6 +6,11 @@ import time
 import datetime
 import csv
 import sys, io, codecs
+import sqlite3
+
+conn = sqlite3.connect('products.db')
+
+c = conn.cursor()
 
 # for the adwords custom class
 from collections import OrderedDict
@@ -277,34 +282,6 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
                     name = " ".join(w2)
                     counter = counter + 1
                 descline1 = " ".join(desclinelist)
-#                if len(name) > 25:
-#                    if len(w) > 3:
-#                        name = w[0] + " " + w[1] + " " + w[2] + " " + w[len(w)-1]
-#                        descline1 = ""
-#                        for word in range(3, len(w)-2):
-#                            descline1 += w[word] + " "
-#                    elif len(w) == 3:
-#                        name = w[0] + " " + w[1]
-#                        descline1 = w[2]
-#                    elif len(w) == 2:
-#                        name = w[0] 
-#                        descline1 = w[1]
-##                    else:
-##                        name = w[0] + " " + w[1]
-#                    if len(name) > 25:
-#                        descline1 += w[len(w)-1]
-#                        if len(w) == 3:
-#                            name = w[0] + " " + w[1] + " " + w[2]
-#                        elif len(w) == 2:
-#                            name = w[0] + " " + w[1]
-#                        else:
-#                            name = w[0]
-#                        if len(name) > 25:
-#                            if len(w) == 2:
-#                                name = w[0] + " " + w[1]
-#                            else:
-#                                name = w[0] + " " + w[2]  
-
                 
                 product2["Headline"] = name
 
@@ -361,10 +338,14 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
 
                 product2["Display URL"] = "ClickShop.hu/" + dashed_name
                 product2["Destination URL"] = url
-
+            
                 #googlewriter.writerow(product1)
                 googlewriter.writerow(product2)
                 googlewriter.writerow(product3)
+
+                c.execute('INSERT OR REPLACE INTO Products(id, name, keywords, url, isfixed, actual_price) VALUES(?,?,?,?,?,?)',(productid, name, product3["Keyword"], url, "false", price))
+                c.execute('INSERT OR REPLACE INTO Prices(p_id, last_modified, price) VALUES(?,?,?)',(productid, datetime.date.today(), price))
+
                 count += 1
                 if count > 10000:
                     print(count.__str__() + " " + name + " " + productid + " " + price.__str__() + " " + imagelink) 
@@ -377,5 +358,6 @@ with open(filename, newline='', encoding='utf-8') as csvfile:
 
 
 csvf.close()
-
+conn.commit()
+conn.close()
 
